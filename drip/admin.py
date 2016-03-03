@@ -1,10 +1,13 @@
 import base64
 import json
 
-from django import forms
-from django.contrib import admin
 
-from drip.models import Drip, SentDrip, QuerySetRule
+from django import forms
+from django.conf import settings
+from django.contrib import admin
+from django.utils.module_loading import import_string
+
+from drip.models import Drip, SentDrip, QuerySetRule, SentEventDrip
 from drip.drips import configured_message_classes, message_class_for
 from drip.utils import get_user_model
 
@@ -15,7 +18,7 @@ class QuerySetRuleInline(admin.TabularInline):
 
 class DripForm(forms.ModelForm):
     message_class = forms.ChoiceField(
-        choices=((k, '%s (%s)' % (k, v)) for k, v in configured_message_classes().items())
+        choices=((k, '%s (%s / %s)' % (k, v['message_class'], v['drip_class'])) for k, v in configured_message_classes().items())
     )
     class Meta:
         model = Drip
@@ -71,11 +74,16 @@ class DripAdmin(admin.ModelAdmin):
 
         return HttpResponse(html, content_type=mime)
 
-    def build_extra_context(self, extra_context):
+    def build_extra_context(self, extra_context, object_id=None):
         from drip.utils import get_simple_fields
         extra_context = extra_context or {}
-        User = get_user_model()
-        extra_context['field_data'] = json.dumps(get_simple_fields(User))
+        if object_id:
+            drip_type = settings.DRIP_TYPES[self.model.objects.get(pk=object_id).message_class]
+        else:
+            drip_type = settings.DRIP_TYPES['default']
+        model = import_string(drip_type['drip_class']).get_drip_object_class()
+        print model
+        extra_context['field_data'] = json.dumps(get_simple_fields(model))
         return extra_context
 
     def add_view(self, request, extra_context=None):
@@ -84,7 +92,7 @@ class DripAdmin(admin.ModelAdmin):
 
     def change_view(self, request, object_id, extra_context=None):
         return super(DripAdmin, self).change_view(
-            request, object_id, extra_context=self.build_extra_context(extra_context))
+            request, object_id, extra_context=self.build_extra_context(extra_context, object_id=object_id))
 
     def get_urls(self):
         from django.conf.urls import patterns, url
@@ -108,4 +116,10 @@ admin.site.register(Drip, DripAdmin)
 class SentDripAdmin(admin.ModelAdmin):
     list_display = [f.name for f in SentDrip._meta.fields]
     ordering = ['-id']
+    raw_id_fields = ['user']
 admin.site.register(SentDrip, SentDripAdmin)
+
+
+@admin.register(SentEventDrip)
+class SentEventDripAdmin(admin.ModelAdmin):
+    raw_id_fields = ['event']

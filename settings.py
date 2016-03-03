@@ -85,3 +85,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+DRIP_TYPES = {
+    'default': {
+            'message_class': 'drip.drips.DripMessage',
+            'drip_class': 'drip.drips.DripBase'
+    },
+    'events': {
+            'message_class': 'drip.drips.EventDripMessage',
+            'drip_class': 'drip.drips.EventDripBase'
+    }
+}

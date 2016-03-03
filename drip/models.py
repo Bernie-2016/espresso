@@ -3,12 +3,15 @@ from datetime import datetime, timedelta
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.conf import settings
+from django.utils.module_loading import import_string
 
 from drip.utils import get_user_model
 
 # just using this to parse, but totally insane package naming...
 # https://bitbucket.org/schinckel/django-timedelta-field/
 import timedelta as djangotimedelta
+
+from ground_control.models import BsdEvents
 
 
 class Drip(models.Model):
@@ -34,9 +37,10 @@ class Drip(models.Model):
 
     @property
     def drip(self):
-        from drip.drips import DripBase
+        
+        DripClass = import_string(settings.DRIP_TYPES[self.message_class]['drip_class'])
 
-        drip = DripBase(drip_model=self,
+        drip = DripClass(drip_model=self,
                         name=self.name,
                         from_email=self.from_email if self.from_email else None,
                         from_email_name=self.from_email_name if self.from_email_name else None,
@@ -48,29 +52,33 @@ class Drip(models.Model):
         return self.name
 
 
-class EventDrip(Drip):
-
-    @property
-    def drip(self):
-        from drip.drips import EventDripBase
-
-        drip = EventDripBase(drip_model=self,
-                        name=self.name,
-                        from_email=self.from_email if self.from_email else None,
-                        from_email_name=self.from_email_name if self.from_email_name else None,
-                        subject_template=self.subject_template if self.subject_template else None,
-                        body_template=self.body_html_template if self.body_html_template else None)
-        return drip
-
-
 class SentDrip(models.Model):
     """
     Keeps a record of all sent drips.
     """
     date = models.DateTimeField(auto_now_add=True)
 
-    drip = models.ForeignKey('drip.Drip', related_name='sent_drips')
+    drip = models.ForeignKey('drip.Drip', related_name='send_drips')
     user = models.ForeignKey(getattr(settings, 'AUTH_USER_MODEL', 'auth.User'), related_name='sent_drips')
+
+    subject = models.TextField()
+    body = models.TextField()
+    from_email = models.EmailField(
+        null=True, default=None # For south so that it can migrate existing rows.
+    )
+    from_email_name = models.CharField(max_length=150,
+        null=True, default=None # For south so that it can migrate existing rows.
+    )
+
+
+class SentEventDrip(models.Model):
+    """
+    Keeps a record of all sent drips.
+    """
+    date = models.DateTimeField(auto_now_add=True)
+
+    drip = models.ForeignKey('drip.Drip', related_name='sent_event_drips')
+    event = models.ForeignKey(BsdEvents, related_name='sent_event_drips')
 
     subject = models.TextField()
     body = models.TextField()
@@ -112,7 +120,7 @@ class QuerySetRule(models.Model):
     drip = models.ForeignKey(Drip, related_name='queryset_rules')
 
     method_type = models.CharField(max_length=12, default='filter', choices=METHOD_TYPES)
-    field_name = models.CharField(max_length=128, verbose_name='Field name of User')
+    field_name = models.CharField(max_length=128, verbose_name='Fields')
     lookup_type = models.CharField(max_length=12, default='exact', choices=LOOKUP_TYPES)
 
     field_value = models.CharField(max_length=255,
@@ -120,9 +128,9 @@ class QuerySetRule(models.Model):
                    '`now-7 days` or `today+3 days` for fancy timedelta.'))
 
     def clean(self):
-        User = get_user_model()
+        klass = import_string(settings.DRIP_TYPES[self.drip.message_class]['drip_class']).get_drip_object_class()
         try:
-            self.apply(User.objects.all())
+            self.apply(klass.objects.all())
         except Exception as e:
             raise ValidationError(
                 '%s raised trying to apply rule: %s' % (type(e).__name__, e))
@@ -190,3 +198,22 @@ class QuerySetRule(models.Model):
 
         # catch as default
         return qs.filter(**kwargs)
+
+
+class SentEventDrip(models.Model):
+    """
+    Keeps a record of all sent drips.
+    """
+    date = models.DateTimeField(auto_now_add=True)
+
+    drip = models.ForeignKey('drip.Drip', related_name='sent_drips')
+    event = models.ForeignKey(BsdEvents, related_name='sent_drips')
+
+    subject = models.TextField()
+    body = models.TextField()
+    from_email = models.EmailField(
+        null=True, default=None # For south so that it can migrate existing rows.
+    )
+    from_email_name = models.CharField(max_length=150,
+        null=True, default=None # For south so that it can migrate existing rows.
+    )

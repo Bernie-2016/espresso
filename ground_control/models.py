@@ -10,7 +10,6 @@
 from __future__ import unicode_literals
 
 from django.db import models
-from drip.drips import DripMessage
 
 
 class BsdPeople(models.Model):

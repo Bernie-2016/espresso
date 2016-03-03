@@ -2,13 +2,14 @@ import operator
 import functools
 
 from django.conf import settings
+from django.db import models
 from django.db.models import Q
 from django.template import Context, Template
 from django.utils.importlib import import_module
 from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 
-from drip.models import SentDrip
+from drip.models import SentDrip, SentEventDrip
 from drip.utils import get_user_model
 
 try:
@@ -18,18 +19,24 @@ except ImportError:
     conditional_now = datetime.now
 
 
+from ground_control.models import BsdEvents
+
+
 import logging
 
 
 def configured_message_classes():
-    conf_dict = getattr(settings, 'DRIP_MESSAGE_CLASSES', {})
+    conf_dict = getattr(settings, 'DRIP_TYPES', {})
     if 'default' not in conf_dict:
-        conf_dict['default'] = 'drip.drips.DripMessage'
+        conf_dict['default'] = {
+            'message_class': 'drip.drips.DripMessage',
+            'drip_class': 'drip.drips.DripBase'
+        }
     return conf_dict
 
 
 def message_class_for(name):
-    path = configured_message_classes()[name]
+    path = configured_message_classes()[name]['message_class']
     mod_name, klass_name = path.rsplit('.', 1)
     mod = import_module(mod_name)
     klass = getattr(mod, klass_name)
@@ -38,15 +45,17 @@ def message_class_for(name):
 
 class DripMessage(object):
 
-    def __init__(self, drip_base, **kwargs):
+    def __init__(self, drip_base):
         self.drip_base = drip_base
-        self._context = context
+        self._context = None
         self._subject = None
         self._body = None
         self._plain = None
         self._message = None
-        for key, value in kwargs.iteritems():
-            setattr(self, key, value)
+
+    def set_context(self, item):
+        self._context = Context({'user': item})
+        return self
 
     @property
     def from_email(self):
@@ -55,10 +64,6 @@ class DripMessage(object):
     @property
     def from_email_name(self):
         return self.drip_base.from_email_name
-
-    @classmethod
-    def get_context(self, item):
-        return {}
 
     @property
     def context(self):
@@ -97,6 +102,7 @@ class DripMessage(object):
             if len(self.plain) != len(self.body):
                 self._message.attach_alternative(self.body, 'text/html')
         return self._message
+
 
 
 class DripBase(object):
@@ -235,11 +241,7 @@ class DripBase(object):
 
         count = 0
         for item in self.get_queryset():
-            MessageClass.set_context(item)
-            if not context:
-                context = {'user': self.get_user(item)}
-            context['drip_base'] = self
-            message_instance = MessageClass(Context(**MessageClass.context))
+            message_instance = MessageClass(self).set_context(item)
             try:
                 print "not sending for now"
                 # result = message_instance.message.send()
@@ -250,7 +252,7 @@ class DripBase(object):
                 if result:
                     SentDrip.objects.create(
                         drip=self.drip_model,
-                        user=context['user'],
+                        user=message_instance.context['user'],
                         from_email=self.from_email,
                         from_email_name=self.from_email_name,
                         subject=message_instance.subject,
@@ -258,7 +260,7 @@ class DripBase(object):
                     )
                     count += 1
             except Exception as e:
-                logging.error("Failed to send drip %s to user %s: %s" % (self.drip_model.id, user, e))
+                logging.error("Failed to send drip %s to user %s: %s" % (self.drip_model.id, message_instance.context['user'], e))
 
         return count
 
@@ -266,6 +268,10 @@ class DripBase(object):
     ####################
     ### USER DEFINED ###
     ####################
+
+    @classmethod
+    def get_drip_object_class(cls):
+        return get_user_model()
 
     def queryset(self):
         """
@@ -275,21 +281,30 @@ class DripBase(object):
         Alternatively, you could create Drips on the fly
         using a queryset builder from the admin interface...
         """
-        User = get_user_model()
-        return User.objects.select_related(*User.get_drip_select_related())
+        klass = type(self).get_drip_object_class()
+        return klass.objects.select_related()
 
 
 class EventDripBase(DripBase):
 
-    def get_user(self, item):
-        return item.creator_cons
+    def prune(self):
+        """
+        Do an exclude for all Users who have a SentDrip already.
+        """
+        target_user_ids = self.get_queryset().values_list('pk', flat=True)
+        exclude_user_ids = SentEventDrip.objects.filter(date__lt=conditional_now(),
+                                                   drip=self.drip_model,
+                                                   event_id__in=target_user_ids)\
+                                           .values_list('event_id', flat=True)
+        self._queryset = self.get_queryset().exclude(pk__in=exclude_user_ids)
 
-    def queryset(self):
-        return BSDEvent.objects.select_related(*BSDEvent.get_drip_select_related())
+    @classmethod
+    def get_drip_object_class(cls):
+        return BsdEvents
 
 
 class EventDripMessage(DripMessage):
 
-    @property
-    def context(self, item):
-        return {'event': item}
+    def set_context(self, item):
+        self._context = Context({'user': item.creator_cons, 'event': item})
+        return self
