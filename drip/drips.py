@@ -235,7 +235,7 @@ class DripBase(object):
 
         count = 0
         for item in self.get_queryset():
-            context = MessageClass.get_context(item)
+            MessageClass.set_context(item)
             if not context:
                 context = {'user': self.get_user(item)}
             context['drip_base'] = self
