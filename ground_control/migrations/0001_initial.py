@@ -60,7 +60,6 @@ class Migration(migrations.Migration):
                 ('event_attendee_id', models.BigIntegerField(serialize=False, primary_key=True)),
                 ('modified_dt', models.DateTimeField()),
                 ('create_dt', models.DateTimeField()),
-                ('event_id', models.BigIntegerField()),
             ],
             options={
                 'verbose_name': 'RSVP',
@@ -116,7 +115,6 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('event_shift_id', models.BigIntegerField(null=True, blank=True)),
-                ('event_id', models.BigIntegerField(null=True, blank=True)),
                 ('start_time', models.TimeField(null=True, blank=True)),
                 ('start_dt', models.DateTimeField(null=True, blank=True)),
                 ('end_time', models.TimeField(null=True, blank=True)),
@@ -190,7 +188,6 @@ class Migration(migrations.Migration):
             name='BsdPersonBsdGroups',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('cons_group_id', models.BigIntegerField()),
             ],
             options={
                 'verbose_name': 'Group Membership',
@@ -235,7 +232,6 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('cons_email_chapter_subscription_id', models.BigIntegerField(null=True, blank=True)),
-                ('cons_email_id', models.BigIntegerField(null=True, blank=True)),
                 ('chapter_id', models.BigIntegerField(null=True, blank=True)),
                 ('isunsub', models.NullBooleanField()),
                 ('unsub_dt', models.DateTimeField(null=True, blank=True)),
@@ -254,7 +250,6 @@ class Migration(migrations.Migration):
                 ('signup_form_field_id', models.BigIntegerField(serialize=False, primary_key=True)),
                 ('modified_dt', models.DateTimeField()),
                 ('create_dt', models.DateTimeField()),
-                ('signup_form_id', models.BigIntegerField()),
                 ('stg_signup_column_name', models.CharField(max_length=64, blank=True)),
                 ('format', models.IntegerField()),
                 ('label', models.CharField(max_length=20000, blank=True)),
@@ -305,7 +300,6 @@ class Migration(migrations.Migration):
             name='FastFwdRequest',
             fields=[
                 ('id', models.IntegerField(serialize=False, primary_key=True)),
-                ('event_id', models.BigIntegerField()),
                 ('host_message', models.TextField()),
                 ('email_sent_dt', models.DateTimeField(null=True, blank=True)),
                 ('modified_dt', models.DateTimeField()),

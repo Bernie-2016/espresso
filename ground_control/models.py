@@ -85,34 +85,6 @@ class BsdEmails(models.Model):
         verbose_name_plural = 'Email Addresses'
 
 
-class BsdEventAttendees(models.Model):
-    event_attendee_id = models.BigIntegerField(primary_key=True)
-    modified_dt = models.DateTimeField()
-    create_dt = models.DateTimeField()
-    attendee_cons = models.ForeignKey(BsdPeople, related_name='rsvps')
-    event_id = models.BigIntegerField()
-
-    class Meta:
-        managed = False
-        db_table = 'bsd_event_attendees'
-        verbose_name = 'RSVP'
-
-
-class BsdEventShifts(models.Model):
-    event_shift_id = models.BigIntegerField(blank=True, null=True)
-    event_id = models.BigIntegerField(blank=True, null=True)
-    start_time = models.TimeField(blank=True, null=True)
-    start_dt = models.DateTimeField(blank=True, null=True)
-    end_time = models.TimeField(blank=True, null=True)
-    end_dt = models.DateTimeField(blank=True, null=True)
-    capacity = models.BigIntegerField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'bsd_event_shifts'
-        verbose_name = 'Event Shift'
-
-
 class BsdEventTypes(models.Model):
     event_type_id = models.BigIntegerField(primary_key=True)
     name = models.CharField(max_length=128)
@@ -172,6 +144,34 @@ class BsdEvents(models.Model):
         return self.name
 
 
+class BsdEventAttendees(models.Model):
+    event_attendee_id = models.BigIntegerField(primary_key=True)
+    modified_dt = models.DateTimeField()
+    create_dt = models.DateTimeField()
+    attendee_cons = models.ForeignKey(BsdPeople, related_name='rsvps')
+    event = models.ForeignKey(BsdEvents, related_name='attendees')
+
+    class Meta:
+        managed = False
+        db_table = 'bsd_event_attendees'
+        verbose_name = 'RSVP'
+
+
+class BsdEventShifts(models.Model):
+    event_shift_id = models.BigIntegerField(blank=True, null=True)
+    event = models.ForeignKey(BsdEvents, related_name='shifts')
+    start_time = models.TimeField(blank=True, null=True)
+    start_dt = models.DateTimeField(blank=True, null=True)
+    end_time = models.TimeField(blank=True, null=True)
+    end_dt = models.DateTimeField(blank=True, null=True)
+    capacity = models.BigIntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'bsd_event_shifts'
+        verbose_name = 'Event Shift'
+
+
 class BsdGroups(models.Model):
     cons_group_id = models.BigIntegerField(primary_key=True)
     name = models.CharField(max_length=255)
@@ -187,7 +187,7 @@ class BsdGroups(models.Model):
 
 class BsdPersonBsdGroups(models.Model):
     cons = models.ForeignKey(BsdPeople, related_name='groups')
-    cons_group_id = models.BigIntegerField()
+    cons_group = models.ForeignKey(BsdGroups, related_name='memberships')
 
     class Meta:
         managed = False
@@ -224,7 +224,7 @@ class BsdPhones(models.Model):
 
 class BsdSubscriptions(models.Model):
     cons_email_chapter_subscription_id = models.BigIntegerField(blank=True, null=True)
-    cons_email_id = models.BigIntegerField(blank=True, null=True)
+    cons_email = models.ForeignKey(BsdEmails, related_name='subscriptions')
     cons = models.ForeignKey(BsdPeople, related_name='email_subscriptions')
     chapter_id = models.BigIntegerField(blank=True, null=True)
     isunsub = models.NullBooleanField()
@@ -237,11 +237,23 @@ class BsdSubscriptions(models.Model):
         verbose_name = 'Subscription'
 
 
+class BsdSurveys(models.Model):
+    signup_form_id = models.BigIntegerField(primary_key=True)
+    signup_form_slug = models.CharField(max_length=100, blank=True)
+    modified_dt = models.DateTimeField()
+    create_dt = models.DateTimeField()
+
+    class Meta:
+        managed = False
+        db_table = 'bsd_surveys'
+        verbose_name = 'Survey'
+
+
 class BsdSurveyFields(models.Model):
     signup_form_field_id = models.BigIntegerField(primary_key=True)
     modified_dt = models.DateTimeField()
     create_dt = models.DateTimeField()
-    signup_form_id = models.BigIntegerField()
+    signup_form = models.ForeignKey(BsdSurveys, related_name='fields')
     stg_signup_column_name = models.CharField(max_length=64, blank=True)
     format = models.IntegerField()
     label = models.CharField(max_length=20000, blank=True)
@@ -254,18 +266,6 @@ class BsdSurveyFields(models.Model):
         managed = False
         db_table = 'bsd_survey_fields'
         verbose_name = 'Survey Field'
-
-
-class BsdSurveys(models.Model):
-    signup_form_id = models.BigIntegerField(primary_key=True)
-    signup_form_slug = models.CharField(max_length=100, blank=True)
-    modified_dt = models.DateTimeField()
-    create_dt = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'bsd_surveys'
-        verbose_name = 'Survey'
 
 
 class Communications(models.Model):
@@ -283,7 +283,7 @@ class Communications(models.Model):
 
 class FastFwdRequest(models.Model):
     id = models.IntegerField(primary_key=True)  # AutoField?
-    event_id = models.BigIntegerField()
+    event = models.ForeignKey(BsdEvents, related_name='fast_fwd_requests')
     host_message = models.TextField()
     email_sent_dt = models.DateTimeField(blank=True, null=True)
     modified_dt = models.DateTimeField()
