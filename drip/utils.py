@@ -99,7 +99,7 @@ def get_fields(Model,
                 RelModel = field.model
                 #field_names.extend(get_fields(RelModel, full_field, True))
             else:
-                RelModel = field.related.parent_model
+                RelModel = field.related.model
 
             out_fields.extend(get_fields(RelModel, full_field, list(model_stack)))
 
