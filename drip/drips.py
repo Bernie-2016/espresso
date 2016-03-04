@@ -5,12 +5,14 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.template import Context, Template
-from django.utils.importlib import import_module
+
 from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 
 from drip.models import SentDrip, SentEventDrip
 from drip.utils import get_user_model
+
+from importlib import import_module
 
 try:
     from django.utils.timezone import now as conditional_now
