@@ -73,7 +73,7 @@ class BsdAddresses(models.Model):
 class BsdEmails(models.Model):
     cons_email_id = models.BigIntegerField(primary_key=True)
     cons = models.ForeignKey(BsdPeople, related_name='email_addresses')
-    is_primary = models.BooleanField()
+    is_primary = models.BooleanField(default=False)
     email = models.CharField(max_length=255)
     modified_dt = models.DateTimeField()
     create_dt = models.DateTimeField()
@@ -103,7 +103,7 @@ class BsdEventTypes(models.Model):
 class BsdEvents(models.Model):
     event_id = models.BigIntegerField(primary_key=True)
     event_id_obfuscated = models.CharField(max_length=16, blank=True)
-    flag_approval = models.BooleanField()
+    flag_approval = models.BooleanField(default=False)
     name = models.CharField(max_length=256)
     description = models.TextField()
     venue_name = models.CharField(max_length=300)
@@ -121,10 +121,10 @@ class BsdEvents(models.Model):
     attendee_volunteer_show = models.BigIntegerField()
     attendee_volunteer_message = models.TextField(blank=True)
     is_searchable = models.BigIntegerField()
-    public_phone = models.BooleanField()
+    public_phone = models.BooleanField(default=False)
     contact_phone = models.CharField(max_length=25, blank=True)
-    host_receive_rsvp_emails = models.BooleanField()
-    rsvp_use_reminder_email = models.BooleanField()
+    host_receive_rsvp_emails = models.BooleanField(default=False)
+    rsvp_use_reminder_email = models.BooleanField(default=False)
     rsvp_email_reminder_hours = models.BigIntegerField(blank=True, null=True)
     latitude = models.FloatField()
     longitude = models.FloatField()
@@ -210,7 +210,7 @@ class BsdPersonGcBsdGroups(models.Model):
 class BsdPhones(models.Model):
     cons_phone_id = models.BigIntegerField(primary_key=True)
     cons = models.ForeignKey(BsdPeople, related_name='phone_numbers')
-    is_primary = models.BooleanField()
+    is_primary = models.BooleanField(default=False)
     phone = models.CharField(max_length=30)
     isunsub = models.NullBooleanField()
     modified_dt = models.DateTimeField()
@@ -258,8 +258,8 @@ class BsdSurveyFields(models.Model):
     format = models.IntegerField()
     label = models.CharField(max_length=20000, blank=True)
     display_order = models.IntegerField()
-    is_shown = models.BooleanField()
-    is_required = models.BooleanField()
+    is_shown = models.BooleanField(default=False)
+    is_required = models.BooleanField(default=False)
     description = models.CharField(max_length=255, blank=True)
 
     class Meta:
@@ -305,7 +305,7 @@ class ZipCodes(models.Model):
     latitude = models.FloatField()
     longitude = models.FloatField()
     timezone_offset = models.IntegerField()
-    has_dst = models.BooleanField()
+    has_dst = models.BooleanField(default=False)
     geom = models.TextField(blank=True)  # This field type is a guess.
 
     class Meta:
