@@ -63,7 +63,7 @@ WSGI_APPLICATION = 'wsgi.application'
 import dj_database_url
 
 DATABASES = {
-    'default': dj_database_url.config(env='GC_DATABASE_URL'),
+    'default': dj_database_url.config(env='DATABASE_URL'),
     'ground_control': dj_database_url.config(env='GC_DATABASE_URL'),
 }
 

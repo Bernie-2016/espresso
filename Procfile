@@ -1,0 +1,1 @@
+web: gunicorn wsgi --log-file - --timeout 360
