@@ -62,7 +62,7 @@ class Migration(migrations.Migration):
                 ('drip', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='send_drips', to='espresso.Drip')),
             ],
             options={
-                'verbose_name': 'Sent Drip Emails',
+                'verbose_name': 'Sent Drip Email',
             },
         ),
     ]
