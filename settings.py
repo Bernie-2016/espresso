@@ -9,9 +9,11 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 """
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import dj_database_url
 import os
-BASE_DIR = os.path.dirname(__file__)
 
+
+BASE_DIR = os.path.dirname(__file__)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
@@ -39,7 +41,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'ground_control',
-    'drip'
+    'espresso'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -60,11 +62,8 @@ WSGI_APPLICATION = 'wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
-import dj_database_url
-
 DATABASES = {
-    'default': dj_database_url.config(env='DATABASE_URL'),
-    'ground_control': dj_database_url.config(env='GC_DATABASE_URL'),
+    'default': dj_database_url.config(env='DATABASE_URL')
 }
 
 # Internationalization
@@ -88,13 +87,5 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
-DRIP_TYPES = {
-    'default': {
-            'message_class': 'drip.drips.DripMessage',
-            'drip_class': 'drip.drips.DripBase'
-    },
-    'events': {
-            'message_class': 'drip.drips.EventDripMessage',
-            'drip_class': 'drip.drips.EventDripBase'
-    }
-}
+# todo: make a dev environment and put this in it
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
