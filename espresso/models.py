@@ -22,6 +22,8 @@ class Drip(models.Model):
     body_html_template = models.TextField(null=True, blank=True,
                                 help_text='You will have settings and user in the context.')
     target = models.CharField(max_length=128, null=True, blank=True)
+    limit = models.IntegerField(default=0)
+    ordering = models.CharField(max_length=128, null=True, blank=True)
     enabled = models.BooleanField(default=False)
     synopsis = models.CharField(max_length=128, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -112,6 +114,9 @@ class QuerySetRule(models.Model):
         if field_name.endswith('__count'):
             agg, _, _ = field_name.rpartition('__')
             field_name = 'num_%s' % agg.replace('__', '_')
+        elif field_name.endswith('__max'):
+            agg, _, _ = field_name.rpartition('__')
+            field_name = 'num_%s' % agg.replace('__', '_')
 
         return field_name
 
@@ -120,6 +125,10 @@ class QuerySetRule(models.Model):
             field_name = self.annotated_field_name
             agg, _, _ = self.field_name.rpartition('__')
             qs = qs.annotate(**{field_name: models.Count(agg, distinct=True)})
+        elif self.field_name.endswith('__max'):
+            field_name = self.annotated_field_name
+            agg, _, _ = self.field_name.rpartition('__')
+            qs = qs.annotate(**{field_name: models.Max(agg, distinct=True)})
         return qs
 
     def filter_kwargs(self, qs, now=datetime.now):

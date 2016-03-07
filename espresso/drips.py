@@ -96,6 +96,12 @@ class DripBase(object):
             qs = qs.exclude(functools.reduce(operator.or_, clauses['exclude']))
         qs = qs.filter(*clauses['filter'])
 
+        if self.drip_model.ordering:
+            qs = qs.order_by(**self.drip_model.ordering.split(','))
+
+        if self.drip_model.limit > 0:
+            qs = qs[0:self.drip_model.limit]
+
         return qs
 
     ##################
