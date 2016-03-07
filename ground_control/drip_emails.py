@@ -7,7 +7,7 @@ class BsdPeopleDripType(espresso.DripBase):
     @classmethod
     def get_email_context(cls, item):
         return {
-            'user': item,
+            'person': item,
             'email_address': item.email_address
         }
 
@@ -21,7 +21,7 @@ class BsdEventHostDripType(espresso.DripBase):
     @classmethod
     def get_email_context(cls, item):
         return {
-            'user': item.creator_cons,
+            'host': item.creator_cons,
             'email_address': item.creator_cons.email_address,
             'event': item
         }
@@ -53,9 +53,10 @@ class BsdEventAttendeesDripType(espresso.DripBase):
     @classmethod
     def get_email_context(cls, item):
         return {
-            'user': item.attendee_cons,
+            'attendee': item.attendee_cons,
             'email_address': item.attendee_cons.email_address,
-            'event': item.event
+            'event': item.event,
+            'rsvp': item
         }
 
     class Meta:
@@ -68,9 +69,10 @@ class BsdEventAttendeesToHostType(BsdEventAttendeesDripType):
     @classmethod
     def get_email_context(cls, item):
         return {
-            'user': item.attendee_cons,
+            'attendee': item.attendee_cons,
             'email_address': item.event.creator_cons.email_address,
-            'event': item.event
+            'event': item.event,
+            'rsvp': item
         }
 
     class Meta:
