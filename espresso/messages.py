@@ -35,13 +35,13 @@ class DripMessage(object):
     @property
     def subject(self):
         if not self._subject:
-            self._subject = Template("{% load tz %}%s" % self.drip_base.subject_template).render(self.context)
+            self._subject = Template("%s" % self.drip_base.subject_template).render(self.context)
         return self._subject
 
     @property
     def body(self):
         if not self._body:
-            self._body = Template("{% load tz %}%s" % self.drip_base.body_template).render(self.context)
+            self._body = Template("%s" % self.drip_base.body_template).render(self.context)
         return self._body
 
     @property
