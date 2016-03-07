@@ -88,4 +88,4 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
 # todo: make a dev environment and put this in it
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
