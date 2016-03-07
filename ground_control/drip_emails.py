@@ -2,6 +2,20 @@ from .models import BsdEvents, BsdPeople, BsdEventAttendees
 import espresso
 
 
+class BsdPeopleDripType(espresso.DripBase):
+    
+    @classmethod
+    def get_email_context(cls, item):
+        return {
+            'user': item,
+            'email_address': item.email_address
+        }
+
+    class Meta:
+        model = BsdPeople
+        verbose_name = 'People'
+
+
 class BsdEventHostDripType(espresso.DripBase):
 
     @classmethod
@@ -17,18 +31,21 @@ class BsdEventHostDripType(espresso.DripBase):
         verbose_name = 'Event (Send to Event Host)'
 
 
-class BsdPeopleDripType(espresso.DripBase):
-    
+class BsdEventEveryoneDripType(espresso.DripBase):
+
     @classmethod
     def get_email_context(cls, item):
+        email_address = map(lambda x: x.attendee_cons.email_addresses, item.attendees)
+        email_addresses.append(item.creator_cons.email_addresses)
+
         return {
-            'user': item,
-            'email_address': item.email_address
+            'email_address': email_addresses,
+            'event': item
         }
 
     class Meta:
-        model = BsdPeople
-        verbose_name = 'People'
+        model = BsdEvents
+        verbose_name = 'Event (Send to Event Host AND Attendees)'
 
 
 class BsdEventAttendeesDripType(espresso.DripBase):
@@ -58,20 +75,3 @@ class BsdEventAttendeesToHostType(BsdEventAttendeesDripType):
     class Meta:
         model = BsdEventAttendees
         verbose_name = 'Event Attendees (Send to Host)'
-
-
-class BsdEventEveryoneDripType(espresso.DripBase):
-
-    @classmethod
-    def get_email_context(cls, item):
-        email_address = map(lambda x: x.attendee_cons.email_addresses, item.attendees)
-        email_addresses.append(item.creator_cons.email_addresses)
-
-        return {
-            'email_address': email_addresses
-            'event': item
-        }
-
-    class Meta:
-        model = BsdEvents
-        verbose_name = 'Event (Send to Event Host AND Attendees)'
