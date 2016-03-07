@@ -58,8 +58,9 @@ class DripMessage(object):
             else:
                 from_ = self.drip_base.from_email
 
-            self._message = EmailMultiAlternatives(
-                self.subject, self.plain, from_, [self.context['email_address']])
+            to_address = [self.context['email_address']] if not isinstance(self.context['email_address'], list) else self.context['email_address']
+
+            self._message = EmailMultiAlternatives(self.subject, self.plain, from_, to_address)
 
             # check if there are html tags in the rendered template
             if len(self.plain) != len(self.body):

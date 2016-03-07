@@ -35,7 +35,7 @@ class BsdEventEveryoneDripType(espresso.DripBase):
 
     @classmethod
     def get_email_context(cls, item):
-        email_address = map(lambda x: x.attendee_cons.email_addresses, item.attendees.all())
+        email_addresses = map(lambda x: x.attendee_cons.email_addresses, item.attendees.all())
         email_addresses.append(item.creator_cons.email_addresses)
 
         return {
