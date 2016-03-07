@@ -69,7 +69,8 @@ class BsdEventAttendeesToHostType(BsdEventAttendeesDripType):
     def get_email_context(cls, item):
         return {
             'user': item.attendee_cons,
-            'email_address': item.event.creator_cons.email_address
+            'email_address': item.event.creator_cons.email_address,
+            'event': item.event
         }
 
     class Meta:
