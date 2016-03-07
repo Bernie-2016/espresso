@@ -56,6 +56,7 @@ class BsdEventAttendeesToHostType(BsdEventAttendeesDripType):
         }
 
     class Meta:
+        model = BsdEventAttendees
         verbose_name = 'Event Attendees (Send to Host)'
 
 
