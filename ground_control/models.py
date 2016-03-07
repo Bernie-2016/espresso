@@ -9,6 +9,8 @@
 # into your database.
 from __future__ import unicode_literals
 
+from pytz import timezone
+
 from django.db import models
 
 
@@ -33,12 +35,19 @@ class BsdPeople(models.Model):
         verbose_name = 'Person'
         verbose_name_plural = 'People'
 
-    @classmethod
-    def get_drip_select_related(self):
-        return ['email_addresses', 'addresses', 'phone_numbers']
+    @property
+    def email_address(self):
+        try:
+            return self.email_addresses.order_by('is_primary').first().email
+        except:
+            return "None"
 
-    def get_email_address(self):
-        return self.email_addresses.filter(is_primary=True).first().email
+    @property
+    def phone_number(self):
+        try:
+            return self.phone_numbers.order_by('is_primary').first().phone
+        except:
+            return "None"
 
     def __unicode__(self):
         return "%(firstname)s %(lastname)s <%(email)s>" % \
@@ -134,6 +143,10 @@ class BsdEvents(models.Model):
     create_dt = models.DateTimeField()
     geom = models.TextField(blank=True)  # This field type is a guess.
     is_official = models.NullBooleanField()
+
+    @property
+    def local_start_time(self):
+        return timezone(self.start_tz).normalize(self.start_dt.replace(tzinfo=timezone('utc')))
 
     class Meta:
         managed = False
