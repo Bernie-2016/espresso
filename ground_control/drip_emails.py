@@ -64,7 +64,7 @@ class BsdEventAttendeesDripType(espresso.DripBase):
         verbose_name = 'Event Attendees'
 
 
-class BsdEventAttendeesToHostType(BsdEventAttendeesDripType):
+class BsdEventAttendeesToHostType(espresso.DripBase):
 
     @classmethod
     def get_email_context(cls, item):
