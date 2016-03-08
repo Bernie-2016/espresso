@@ -138,7 +138,11 @@ class QuerySetRule(models.Model):
         field_value = self.field_value
 
         # set time deltas and dates
-        if self.field_value.startswith('now-'):
+        if self.field_value == 'now':
+            field_value = now()
+        elif self.field_value == 'today':
+            field_value = now().date()
+        elif self.field_value.startswith('now-'):
             field_value = self.field_value.replace('now-', '')
             field_value = now() - djangotimedelta.parse(field_value)
         elif self.field_value.startswith('now+'):
