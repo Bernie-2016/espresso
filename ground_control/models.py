@@ -210,7 +210,7 @@ class BsdPersonBsdGroups(models.Model):
 
 class BsdPersonGcBsdGroups(models.Model):
     cons = models.ForeignKey(BsdPeople)
-    gc_bsd_group_id = models.IntegerField()
+    gc_bsd_group = models.ForeignKey('GcBsdGroups')
     modified_dt = models.DateTimeField()
     create_dt = models.DateTimeField()
     id = models.IntegerField(primary_key=True)  # AutoField?
@@ -285,7 +285,7 @@ class Communications(models.Model):
     id = models.IntegerField(primary_key=True)  # AutoField?
     modified_dt = models.DateTimeField()
     create_dt = models.DateTimeField()
-    person_id = models.IntegerField()
+    person = models.ForeignKey(BsdPeople, related_name='communications')
     type = models.CharField(max_length=255)
 
     class Meta:
@@ -306,6 +306,64 @@ class FastFwdRequest(models.Model):
         managed = False
         db_table = 'fast_fwd_request'
         verbose_name = 'FastFwd Request'
+
+
+class GcBsdGroups(models.Model):
+    id = models.BigIntegerField(primary_key=True)
+    modified_dt = models.DateTimeField()
+    create_dt = models.DateTimeField()
+    query = models.TextField(blank=True, null=True)
+    cons_group = models.ForeignKey(BsdGroups)
+    active = models.BooleanField()
+
+    class Meta:
+        managed = False
+        db_table = 'gc_bsd_groups'
+
+
+class GcBsdSurveys(models.Model):
+    id = models.BigIntegerField(primary_key=True)
+    modified_dt = models.DateTimeField()
+    create_dt = models.DateTimeField()
+    processors = models.TextField()  # This field type is a guess.
+    signup_form = models.ForeignKey(BsdSurveys)
+
+    class Meta:
+        managed = False
+        db_table = 'gc_bsd_surveys'
+
+
+class BsdCallAssignments(models.Model):
+    id = models.BigIntegerField(primary_key=True)
+    modified_dt = models.DateTimeField()
+    create_dt = models.DateTimeField()
+    name = models.CharField(max_length=255)
+    gc_bsd_survey = models.ForeignKey(GcBsdSurveys, models.DO_NOTHING)
+    interviewee_group = models.ForeignKey('GcBsdGroups', models.DO_NOTHING, db_column='interviewee_group')
+    instructions = models.TextField(blank=True, null=True)
+    start_dt = models.DateTimeField()
+    end_dt = models.DateTimeField(blank=True, null=True)
+    renderer = models.TextField()
+
+    class Meta:
+        managed = False
+        db_table = 'bsd_call_assignments'
+        verbose_name = 'BSD Call Assignment'
+
+
+class GcBsdEvents(models.Model):
+    event = models.ForeignKey(BsdEvents)
+    turn_out_assignment = models.ForeignKey(BsdCallAssignments, models.DO_NOTHING, db_column='turn_out_assignment', blank=True, null=True)
+    modified_dt = models.DateTimeField()
+    create_dt = models.DateTimeField()
+    followup_emailed = models.BooleanField()
+    fast_fwd_instructions_sent = models.BooleanField()
+    pending_review = models.BooleanField()
+
+    class Meta:
+        managed = False
+        db_table = 'gc_bsd_events'
+        verbose_name = 'GC BSD Event'
 
 
 class ZipCodes(models.Model):
