@@ -89,9 +89,9 @@ class FieldStaffType(espresso.DripBase):
 
     @classmethod
     def get_email_context(cls, item):
-        cd = CongressionalDistrict.objects.get(geom__contains=item.geom)
+        cd = CongressionalDistricts.objects.get(geom__contains=item.geom)
         return {
-            'email_address': CALIFORNIA_CONGRESSIONAL_DISTRICTS.get(cd.district, 'jonculver@berniesanders.com'),
+            'email_address': filter(lambda DIST: DIST['cd'] == cd.district, CALIFORNIA_CONGRESSIONAL_DISTRICTS)['cd'],
             'event': item
         }
 
