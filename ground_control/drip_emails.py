@@ -1,5 +1,10 @@
 from .models import BsdEvents, BsdPeople, BsdEventAttendees
+from geo.models import *
+import requests
 import espresso
+
+# # might be nice to move to a task but let's see how painful this becomes.
+CALIFORNIA_CONGRESSIONAL_DISTRICTS = requests.get('http://googledoctoapi.forberniesanders.com/1wd-MZsG_DO5UgUHPoZjCeWfS_QlVX1-Vjz6IBWhUqW8').json()
 
 
 class BsdPeopleDripType(espresso.DripBase):
@@ -78,3 +83,18 @@ class BsdEventAttendeesToHostType(espresso.DripBase):
     class Meta:
         model = BsdEventAttendees
         verbose_name = 'Event Attendees (Send to Host)'
+
+
+class FieldStaffType(espresso.DripBase):
+
+    @classmethod
+    def get_email_context(cls, item):
+        cd = CongressionalDistrict.objects.get(geom__contains=item.geom)
+        return {
+            'email_address': CALIFORNIA_CONGRESSIONAL_DISTRICTS.get(cd.district, 'jonculver@berniesanders.com'),
+            'event': item
+        }
+
+    class Meta:
+        model = BsdEvents
+        verbose_name = 'Events (Send to Field Staff)'

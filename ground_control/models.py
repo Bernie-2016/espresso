@@ -11,7 +11,8 @@ from __future__ import unicode_literals
 
 from pytz import timezone
 
-from django.db import models
+from django.contrib.gis.db import models
+
 
 
 class BsdPeople(models.Model):
@@ -70,7 +71,7 @@ class BsdAddresses(models.Model):
     longitude = models.FloatField()
     modified_dt = models.DateTimeField()
     create_dt = models.DateTimeField()
-    geom = models.TextField(blank=True)  # This field type is a guess.
+    geom = models.PointField(blank=True)  # This field type is a guess.
 
     class Meta:
         managed = False
@@ -141,7 +142,7 @@ class BsdEvents(models.Model):
     event_type = models.ForeignKey(BsdEventTypes, related_name='events')
     modified_dt = models.DateTimeField()
     create_dt = models.DateTimeField()
-    geom = models.TextField(blank=True)  # This field type is a guess.
+    geom = models.PointField(blank=True)  # This field type is a guess.
     is_official = models.NullBooleanField()
 
     @property
@@ -377,7 +378,7 @@ class ZipCodes(models.Model):
     longitude = models.FloatField()
     timezone_offset = models.IntegerField()
     has_dst = models.BooleanField(default=False)
-    geom = models.TextField(blank=True)  # This field type is a guess.
+    geom = models.PointField(blank=True)  # This field type is a guess.
 
     class Meta:
         managed = False
