@@ -62,14 +62,15 @@ class DripAdmin(admin.ModelAdmin):
         drip = get_object_or_404(Drip, id=drip_id)
         klass = import_string(drip.target).Meta.model
         item = get_object_or_404(klass, pk=item_id)
-        drip_message = DripMessage(drip.drip).set_context(import_string(drip.target).get_email_context(item))
+        context = import_string(drip.target).get_email_context(item)
+        drip_message = DripMessage(drip.drip).set_context(context)
 
         html = ''
         mime = ''
         if drip_message.message.alternatives:
             for body, mime in drip_message.message.alternatives:
                 if mime == 'text/html':
-                    html = render_to_string('bernie_stock.html', {'email_content': body})
+                    html = render_to_string('bernie_stock.html', dict(context, **{'email_content': body}))
                     mime = 'text/html'
         else:
             html = drip_message.message.body
