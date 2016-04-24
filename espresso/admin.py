@@ -105,7 +105,7 @@ class DripAdmin(admin.ModelAdmin):
                 name='drip_timeline'
             ),
             url(
-                r'^(?P<drip_id>[\d]+)/timeline/(?P<into_past>[\d]+)/(?P<into_future>[\d]+)/(?P<user_id>[\d]+)/$',
+                r'^(?P<drip_id>[\d]+)/timeline/(?P<into_past>[\d]+)/(?P<into_future>[\d]+)/(?P<item_id>[\d]+)/$',
                 self.av(self.view_drip_email),
                 name='view_drip_email'
             )
