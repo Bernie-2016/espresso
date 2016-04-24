@@ -59,9 +59,9 @@ class DripAdmin(admin.ModelAdmin):
         from django.shortcuts import render, get_object_or_404
         from django.http import HttpResponse
         drip = get_object_or_404(Drip, id=drip_id)
-        klass = import_string(drip.drip_model.target).Meta.model
+        klass = import_string(drip.target).Meta.model
         item = get_object_or_404(klass, pk=item_id)
-        drip_message = DripMessage(drip).set_context(import_string(drip.drip_model.target).get_email_context(item))
+        drip_message = DripMessage(drip.drip).set_context(import_string(drip.target).get_email_context(item))
 
         html = ''
         mime = ''
