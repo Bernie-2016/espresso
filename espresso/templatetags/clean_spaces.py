@@ -5,4 +5,4 @@ register = template.Library()
 
 @register.filter()
 def clean_spaces(value):
-    return mark_safe("&nbsp;".join(value.split(' ')))
+    return mark_safe(" ".join(value.split('&nbsp;')))
