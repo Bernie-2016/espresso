@@ -13,7 +13,7 @@ from django.utils.module_loading import import_string
 from espresso.models import Drip, SentDrip, QuerySetRule
 from espresso.drips import DripBase
 from espresso.utils import get_simple_fields #, get_user_model
-from espress.messages import DripMessage
+from espresso.messages import DripMessage
 
 
 class QuerySetRuleInline(admin.TabularInline):
