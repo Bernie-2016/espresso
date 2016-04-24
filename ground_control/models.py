@@ -145,6 +145,9 @@ class BsdEvents(models.Model):
     geom = models.PointField(blank=True)  # This field type is a guess.
     is_official = models.NullBooleanField()
 
+    def get_absolute_url(self):
+        return "https://go.berniesanders.com/page/event/detail/%s" % self.event_id_obfuscated
+
     @property
     def local_start_time(self):
         return timezone(self.start_tz).normalize(self.start_dt.replace(tzinfo=timezone('utc')))
