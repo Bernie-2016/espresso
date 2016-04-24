@@ -8,6 +8,7 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
+from django.template.loader import render_to_string
 from django.utils.module_loading import import_string
 
 from espresso.models import Drip, SentDrip, QuerySetRule
@@ -68,7 +69,7 @@ class DripAdmin(admin.ModelAdmin):
         if drip_message.message.alternatives:
             for body, mime in drip_message.message.alternatives:
                 if mime == 'text/html':
-                    html = body
+                    html = render_to_string('bernie_stock.html', {'email_content': body})
                     mime = 'text/html'
         else:
             html = drip_message.message.body
