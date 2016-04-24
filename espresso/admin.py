@@ -13,6 +13,7 @@ from django.utils.module_loading import import_string
 from espresso.models import Drip, SentDrip, QuerySetRule
 from espresso.drips import DripBase
 from espresso.utils import get_simple_fields #, get_user_model
+from espress.messages import DripMessage
 
 
 class QuerySetRuleInline(admin.TabularInline):
@@ -54,14 +55,14 @@ class DripAdmin(admin.ModelAdmin):
 
         return render(request, 'drip/timeline.html', locals())
 
-    def view_drip_email(self, request, drip_id, into_past, into_future, user_id):
+    def view_drip_email(self, request, drip_id, into_past, into_future, item_id):
         from django.shortcuts import render, get_object_or_404
         from django.http import HttpResponse
         drip = get_object_or_404(Drip, id=drip_id)
-        User = get_user_model()
-        user = get_object_or_404(User, id=user_id)
+        klass = import_string(drip.drip_model.target).Meta.model
+        item = get_object_or_404(klass, pk=item_id)
+        drip_message = DripMessage(drip).set_context(import_string(drip.drip_model.target).get_email_context(item))
 
-        drip_message = message_class_for(drip.message_class)(drip.drip, user)
         html = ''
         mime = ''
         if drip_message.message.alternatives:
