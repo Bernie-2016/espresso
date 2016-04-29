@@ -1,5 +1,6 @@
 from django.core.mail import EmailMultiAlternatives
 from django.template import Context, Template
+from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
 # from drip.models import SentDrip, SentEventDrip
@@ -17,6 +18,7 @@ class DripMessage(object):
         self._message = None
 
     def set_context(self, data):
+        self._data = data
         self._context = Context(data)
         return self
 
@@ -64,5 +66,11 @@ class DripMessage(object):
 
             # check if there are html tags in the rendered template
             if len(self.plain) != len(self.body):
-                self._message.attach_alternative(self.body, 'text/html')
+
+                html_body = self.body
+
+                if self.drip_base.template:
+                    html_body = render_to_string(self.drip_base.template, dict(self._data, **{'email_content': html_body}))
+
+                self._message.attach_alternative(html_body, 'text/html')
         return self._message

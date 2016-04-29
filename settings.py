@@ -108,3 +108,8 @@ MAILGUN_ACCESS_KEY = os.environ.get('MAILGUN_ACCESS_KEY', None)
 MAILGUN_SERVER_NAME = os.environ.get('MAILGUN_SERVER_NAME', None)
 
 EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+
+DRIP_TEMPLATES = (
+    (None, 'None'),
+    ('bernie_stock.html', 'Bernie 2016 Stock'),
+)

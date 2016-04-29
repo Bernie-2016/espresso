@@ -29,6 +29,7 @@ class DripBase(object):
     body_template = None
     from_email = None
     from_email_name = None
+    template = None
 
     def __init__(self, drip_model, *args, **kwargs):
         self.drip_model = drip_model
@@ -38,6 +39,7 @@ class DripBase(object):
         self.from_email_name = kwargs.pop('from_email_name', self.from_email_name)
         self.subject_template = kwargs.pop('subject_template', self.subject_template)
         self.body_template = kwargs.pop('body_template', self.body_template)
+        self.template = kwargs.pop('template', self.template)
 
         if not self.name:
             raise AttributeError('You must define a name.')
@@ -128,7 +130,12 @@ class DripBase(object):
 
         return count
 
-    def prune(self):
+    def send_sample(self, to):
+        self.prune()
+        count = self.send(to)
+        return count
+
+    def prune(self, count='all'):
 
         """
         Do an exclude for all Users who have a SentDrip already.
@@ -142,7 +149,10 @@ class DripBase(object):
                                            .values_list('item_id', flat=True)
         self._queryset = self.get_queryset().exclude(pk__in=exclude_ids)
 
-    def send(self):
+        if count != 'all':
+            self._queryset = self._queryset[0]
+
+    def send(self, to=None):
         """
         Send the message to each user on the queryset.
 
@@ -158,10 +168,15 @@ class DripBase(object):
 
         count = 0
         for item in self.get_queryset():
-            message_instance = DripMessage(self).set_context(import_string(self.drip_model.target).get_email_context(item))
+
+            context = import_string(self.drip_model.target).get_email_context(item)
+            if to:
+                context['email_address'] = to
+            
+            message_instance = DripMessage(self).set_context(context)
             try:
                 result = message_instance.message.send()
-                if result:
+                if result and not to:
                     SentDrip.objects.create(
                         drip=self.drip_model,
                         item_id=item.pk,
@@ -170,7 +185,7 @@ class DripBase(object):
                         subject=message_instance.subject,
                         body=message_instance.body
                     )
-                    count += 1
+                count += 1
             except Exception as e:
                 logging.error("Failed to send drip %s to %s: %s" % (self.drip_model.id, message_instance.context['email_address'], e))
 

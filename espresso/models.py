@@ -21,6 +21,7 @@ class Drip(models.Model):
     subject_template = models.TextField(null=True, blank=True)
     body_html_template = models.TextField(null=True, blank=True,
                                 help_text='You will have settings and user in the context.')
+    template = models.CharField(max_length=64, null=True, blank=True, default=None, choices=settings.DRIP_TEMPLATES)
     target = models.CharField(max_length=128, null=True, blank=True)
     limit = models.IntegerField(default=0)
     ordering = models.CharField(max_length=128, null=True, blank=True)
@@ -39,7 +40,8 @@ class Drip(models.Model):
                         from_email=self.from_email if self.from_email else None,
                         from_email_name=self.from_email_name if self.from_email_name else None,
                         subject_template=self.subject_template if self.subject_template else None,
-                        body_template=self.body_html_template if self.body_html_template else None)
+                        body_template=self.body_html_template if self.body_html_template else None,
+                        template=self.template if self.template else None)
 
     def get_target_model(self):
         return import_string(self.target).Meta.model

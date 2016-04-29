@@ -24,6 +24,18 @@ class QuerySetRuleInline(admin.TabularInline):
 class DripAdmin(admin.ModelAdmin):
     list_display = ('name', 'enabled', 'synopsis')
     inlines = [QuerySetRuleInline]
+    save_as = True
+
+    def send_sample_email(self, request, object_id, extra_context):
+        drip = Drip.objects.get(pk=object_id)
+        drip.drip.send_sample(request.user.email)
+        self.message_user(request, "Sent to %s" % request.user.email, level='success')
+
+    def change_view(self, request, object_id, extra_context=None):        
+        default = super(ModelAdmin, self).change_view(request, object_id, extra_context)
+        if '_email_to_me' in request.POST:
+            self.send_sample_email(request, object_id, extra_context=extra_context)
+        return default
 
     def populate_target_registry(self):
         registry = []
@@ -31,7 +43,7 @@ class DripAdmin(admin.ModelAdmin):
             try:
                 drip_emails = importlib.import_module("%s.drip_emails" % app)
                 registry += [("%s.%s" % (cls.__module__, cls.__name__), cls.Meta.verbose_name) for name, cls in drip_emails.__dict__.items() if isinstance(cls, type) and issubclass(cls, DripBase)]
-            except:
+            except ImportError:
                 pass
         self._target_registry = tuple(registry)
 
@@ -70,7 +82,10 @@ class DripAdmin(admin.ModelAdmin):
         if drip_message.message.alternatives:
             for body, mime in drip_message.message.alternatives:
                 if mime == 'text/html':
-                    html = render_to_string('bernie_stock.html', dict(context, **{'email_content': body}))
+                    if drip.template:
+                        html = render_to_string(drip.template, dict(context, **{'email_content': body}))
+                    else:
+                        html = body
                     mime = 'text/html'
         else:
             html = drip_message.message.body
