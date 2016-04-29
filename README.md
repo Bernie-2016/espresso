@@ -1,6 +1,6 @@
 ## Espresso: It's way better than drip.™
 
-Espresso is a Django drip email module, based on Zapier's  [django-drip](https://github.com/zapier/django-drip). It's meant to be more flexible and modular. Whereas django-drip is tightly coupled to Django's [`contrib.auth.User`](https://docs.djangoproject.com/es/1.9/topics/auth/default/), Espresso can be configured to setup rules for any Django model.
+Espresso is a Django drip email module, based on Zapier's [django-drip](https://github.com/zapier/django-drip). It's meant to be more flexible and modular. Whereas django-drip is tightly coupled to Django's [`contrib.auth.User`](https://docs.djangoproject.com/es/1.9/topics/auth/default/), Espresso can be configured to setup rules for any Django model.
 
 Espresso also adds support for HTML and plaintext templates to wrap your messages, making use of Django's excellent [template system](https://docs.djangoproject.com/es/1.9/topics/templates/).
 
@@ -16,7 +16,7 @@ Espresso also adds support for HTML and plaintext templates to wrap your message
 1. For demonstration purposes, let's assume you have a few models setup:
 
         from django.db import models
-dr
+
         class Person(models.Model):
             email = models.EmailField()
             first_name = models.CharField()
